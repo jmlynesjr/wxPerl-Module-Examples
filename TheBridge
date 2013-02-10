@@ -1,0 +1,470 @@
+A Bridge to a Real wxPerl Application(Draft)
+--------------------------------------------
+Compiled and/or written by:
+James M. Lynes Jr.
+Last Modified: February 4, 2013
+
+Introduction
+------------
+
+In my process of learning Perl and wxPerl over the past two years, I have noticed that there
+is quite a gap between the way things are done in the "hello world" type of example and
+the way things are done in a real application. In many cases, the examples available to learn
+from are nicely packaged into large applications since there are so many modules to be
+presented. Unfortunately this packaging adds complexity over and above that needed by the
+module itself. In addition these examples are written by very experienced developers
+using all of the "obscure" Perl syntax. The available documentation is 2200+ pages
+of the wxWidgets C++ usage and many of the examples are sparsely commented. Fortunately,
+over time, the C++ usage gets easier to read and the documentation becomes easier
+to use. It's a steep hill for a new learner to climb.
+
+In order to assist in my learning, I ported many of the "wxBook" C++ examples to wxPerl. I
+tried to use the most stripped down program structure that I could that would illustrate
+only the function being demonstrated, focusing on readability over efficiency.
+
+Now I am looking to start combining these elements into a "real" application. And even though
+I tend to lean towards readability, it's time for some of the "obscure" Perl syntax to
+begin to be blended in. I'm sure my coding style will evolve as more of these idioms
+are included in my applications. I intend to document my findings in this document.
+Maybe it will speed up your learning curve too.
+
+Basic Application Structure
+---------------------------
+
+The following is a basic structure for a wxPerl application. Some programmers
+like to reverse the order of the packages shown.
+
+      package main;						# Program initialization
+      use strict;
+      use warnings;
+      my $app = App->new();					# Create the application object
+      $app->MainLoop;						# Start event processing
+
+      package App;						# Application initialization
+      use strict;
+      use warnings;
+      use base 'Wx::App';					# Inherit from Wx::App object
+      sub OnInit {						# Called from $app automatically
+          my $frame = Frame->new();				# Create the top level window
+          $frame->Show(1);					# Display the top level window
+      }
+
+      package Frame;						# Create the top level window
+      use strict;
+      use warnings;
+      use Wx qw(:everything);					# Lazy way to pull in references
+      use base qw(Wx::Frame);					# Inherit from Wx::Frame object
+      use Wx::Event(EVT_A EVT_B EVT_3 etc);			# List required events
+
+      # use other modules as needed by your application - Core, CPAN, or custom
+      
+      sub new {
+          my ($self) = @_;
+
+          # Create top level window- (SUPER refers to Wx::Frame)
+          $self = $self->SUPER::new(undef, wxID_ANY, "Window Title", wxDefaultPosition, wxDefaultSize);
+
+          # Attach required events(listed above) to an event handler - simple format - see below
+          EVT_A($self, \&onAhandler);				# $self is the window/subwindow
+          EVT_B($self, \&onBhandler);				# that is to receive this event
+          EVT_C($self, \&onChandler);
+
+          # Create subwindows, controls, sizers, etc. as needed by the application
+
+          return $self;						# Return the top level window object
+      }
+      1;							# True, so App continues processing
+
+      sub onAhandler {						# One handler per event above
+          my ($self, $event) = @_;
+          # Process the event here
+      }
+      sub onBhandler {						# One handler per event above
+          my ($self, $event) = @_;
+          # Process the event here
+      }
+      sub onChandler {						# One handler per event above
+          my ($self, $event) = @_;
+          # Process the event here
+      }
+      # Other subroutines as needed by the application
+
+Alternate Event Handler - can be overridden in a derived class(from a Mark Dootson email) 
+-----------------------------------------------------------------------------------------
+
+      EVT_A($self, sub{shift->_evt_on_Ahandler(@_);})
+
+      _evt_on_Ahandler {
+          my($self, $event) = @_;
+          $self->SUPER::_evt_on_Ahandler($event);
+          # Extra code here for a derived class
+      }
+
+Application Flow
+----------------
+
+The flow of an application is as follows:
+
+      1. main creates the application object($app) by calling App->new()
+      2. The application object($app) automatically calls App::OnInit()
+      3. OnInit calls Frame->new() to create the top level window
+      4. Frame->new() creates the top level window, subwindows, controls,
+          sizers, event handlers, etc. as needed by the application
+      5. Frame returns the top level window object, $self, to OnInit
+      6. OnInit displays the top level window($self) by calling $frame->Show(1)
+      7. OnInit returns to main
+      8. main starts the MainLoop(which processes events) by calling $app->MainLoop 
+         (it's all event processing from here on out, steps 1-8 aren't called again)    
+
+
+Object Creation - Basic to Actual Practice
+------------------------------------------
+
+C Structure Emulation(from Perltoot)
+------------------------------------
+
+       By far the most common mechanism used in Perl to represent a Pascal
+       record, a C struct, or a C++ class is an anonymous hash.  That's
+       because a hash has an arbitrary number of data fields, each
+       conveniently accessed by an arbitrary name of your own devising.
+
+       If you were just doing a simple struct-like emulation, you would likely
+       go about it something like this:
+
+           $rec = {
+               name  => "Jason",
+               age   => 23,
+               peers => [ "Norbert", "Rhys", "Phineas"],
+           };
+
+       If you felt like it, you could add a bit of visual distinction by up-
+       casing the hash keys:
+
+           $rec = {
+               NAME  => "Jason",
+               AGE   => 23,
+               PEERS => [ "Norbert", "Rhys", "Phineas"],
+           };
+
+       And so you could get at "$rec->{NAME}" to find "Jason", or
+       "@{$rec->{PEERS} }" to get at "Norbert", "Rhys", and "Phineas".
+
+Basic Class Structure/Creation(from Perltoot) - This version does not support Inheritance
+----------------------------------------------------------------------------------------
+
+       Still, someone has to know what's in the object.  And that someone is
+       the class.  It implements methods that the programmer uses to access
+       the object.  Here's how to implement the Person class using the
+       standard hash-ref-as-an-object idiom.  We'll make a class method called
+       new() to act as the constructor, and three object methods called
+       name(), age(), and peers() to get at per-object data hidden away in our
+       anonymous hash.
+
+           package Person;
+           use strict;
+
+           ##################################################
+           ## the object constructor (simplistic version)  ##
+           ##################################################
+           sub new {
+               my $self  = {};
+               $self->{NAME}   = undef;
+               $self->{AGE}    = undef;
+               $self->{PEERS}  = [];
+               bless($self);           		# See below
+               return $self;
+           }
+
+           ##############################################
+           ## methods to access per-object data        ##
+           ##  (hand coded Accessors)                  ##
+           ## With args, they set the value.  Without  ##
+           ## args, they retrieve the value.           ##
+           ##############################################
+
+           sub name {
+               my $self = shift;
+               if (@_) { $self->{NAME} = shift }
+               return $self->{NAME};
+           }
+
+           sub age {
+               my $self = shift;
+               if (@_) { $self->{AGE} = shift }
+               return $self->{AGE};
+           }
+
+           sub peers {
+               my $self = shift;
+               if (@_) { @{ $self->{PEERS} } = @_ }
+               return @{ $self->{PEERS} };
+           }
+
+           1;  # True, so the require or use succeeds
+
+Basic Class with support for inheritance(from Perltoot)
+-------------------------------------------------------
+
+       Even though at this point you may not even know what it means, someday
+       you're going to worry about inheritance.  (You can safely ignore this
+       for now and worry about it later if you'd like.)  To ensure that this
+       all works out smoothly, you must use the double-argument form of
+       bless().  The second argument is the class into which the referent will
+       be blessed.  By not assuming our own class as the default second
+       argument and instead using the class passed into us, we make our
+       constructor inheritable.
+
+           sub new {
+               my $class = shift;
+               my $self  = {};
+               $self->{NAME}   = undef;
+               $self->{AGE}    = undef;
+               $self->{PEERS}  = [];
+               bless ($self, $class);
+               return $self;
+           }
+
+       That's about all there is for constructors.  These methods bring
+       objects to life, returning neat little opaque bundles to the user to be
+       used in subsequent method calls.
+
+
+Automagically generate accessors/mutators for your class(from Class::Accessor)
+------------------------------------------------------------------------------
+
+       Most of the time, writing accessors is an exercise in cutting and pasting.
+       You usually wind up with a series of methods like this:
+
+           sub name {
+               my $self = shift;
+               if(@_) {
+                   $self->{name} = $_[0];
+               }
+               return $self->{name};
+           }
+
+           sub salary {
+               my $self = shift;
+               if(@_) {
+                   $self->{salary} = $_[0];
+               }
+               return $self->{salary};
+           }
+
+         # etc...
+
+       One for each piece of data in your object.  While some will be unique,
+       doing value checks and special storage tricks, most will simply be exercises
+       in repetition.  Not only is it Bad Style to have a bunch of repetitious code,
+       but it's also simply not lazy, which is the real tragedy.
+
+       If you make your module a subclass of Class::Accessor and declare your
+       accessor fields with mk_accessors() then you'll find yourself with a set of
+       automatically generated accessors which can even be customized!
+
+       The basic set up is very simple:
+
+           package Foo;
+           use base qw(Class::Accessor);
+           Foo->mk_accessors( qw(far bar car) );
+
+       Done!  Foo now has simple far(), bar() and car() accessors defined.
+
+       Class::Accessor also provides a basic constructor, "new".  It generates a hash-based object
+       and can be called as either a class method or an object method.
+
+           my $obj = Foo->new;
+           my $obj = $other_obj->new;
+
+           my $obj = Foo->new(\%fields);
+           my $obj = $other_obj->new(\%fields);
+
+       It takes an optional %fields hash which is used to initialize the object.
+       The fields of the hash correspond to the names of your accessors, so...
+
+           package Foo;
+           use base qw(Class::Accessor);
+           Foo->mk_accessors('foo');
+
+           my $obj = Foo->new({ foo => 42 });
+           print $obj->foo;    # 42
+
+       However %fields can contain anything, new() will shove them all into your object.
+
+Accessor Usage with wxPerl(from a Mark Dootson email)
+-----------------------------------------------------
+
+       It is generally accepted that accessing the members of an object directly
+       by their hash keys is bad practice. So,
+
+       $object->{something} ; # is bad
+       $object->something() ; # is good
+
+       Apart from all the OO theory that says $object->something is the correct thing to have,
+       in practical terms the major disadvantage of the direct hash access is that errors
+       in your code are more difficult to debug / catch.
+
+       For example, if I misspell the accessor name
+
+       $object->{somting} ;
+       $object->somting() ;
+
+       Then for the hash based access I get no error and the type of warning will be dependent on context.
+       For the method based accessor ( $object->somting ) I always get 'no method named somting' error.
+
+       The plain Perl method for creating the method would be along the lines of
+
+       sub something {
+       my $self = shift;
+       $self->{_something} = shift if(@_);
+       $self->{_something};
+       }
+
+       The module 'Class::Accessor' just gives a few shorthand ways of doing this and
+       I wanted to demonstrate that you don't have to do the longhand code above.
+       Class::Accessor also claims a speed increase for the accessors it creates.
+
+       *** However, we have a problem incorporating this into Wx. ***
+       Class::Accessor relies on an inheriting class calling its 'new' method. But we
+       also need to call the 'new' method of Wx::Window so we inherit from that.
+       There are various ways of working around this, but there isn't one that would be
+       regarded as a 'standard' as far as I am aware. So rather than subject you
+       to some possibly confusing code, I just put the data into a separate class.
+
+       For example:
+
+       #########################################################################################
+
+       package Meter::Data;
+
+       #########################################################################################
+       use strict;
+       use warnings;
+       use Class::Accessor::Fast;
+       use base qw( Class::Accessor::Fast );
+
+       # Create the Accessors
+       __PACKAGE__->mk_accessors( qw( ActiveBar PassiveBar ValueColour BorderColour
+       LimitColour TagsColour ScaledVal RealVal Max Min DirOrizFlag ShowCurrent
+       ShowLimits Font Tags ) );
+
+       # Create the Object
+       sub new { shift->SUPER::new( @_ ); }
+       1;
+  
+Class::Accessor Usage Example in wxPerl
+---------------------------------------
+
+       See the comments below relating to the BEGIN block. Only needed due to the
+       structure of this example - multiple packages within the same source file.
+
+       #! /home/xxxx/CitrusPerl/perl/bin/perl
+
+       # Test of Class::Accessor::Fast
+
+       package main;
+       use strict;
+       use warnings;
+       my $app = App->new();
+       $app->MainLoop;
+
+       package App;
+       use strict;
+       use warnings;
+       use base 'Wx::App';
+       sub OnInit {
+           my $frame = Frame->new();
+           $frame->Show(1);
+       }
+
+       package Frame;
+       use strict;
+       use warnings;
+       use Wx qw(:everything);
+       use base qw(Wx::Frame);
+       use Data::Dumper;
+
+       sub new {
+           my($self) = @_;
+
+           $self = $self->SUPER::new(undef, -1, "Class::Accessor Test", 
+                                     wxDefaultPosition, wxDefaultSize);
+           my %defaults = (
+                           vara => 10,
+                           varb => 20,
+                           varc => 30,
+                           vard => 40,
+                           vare => 50,
+           );
+
+           my $obj = Data->new(\%defaults);			# Object created and initialized correctly
+           print Dumper($obj);
+
+           $obj->vara(100);					# Use of generated accessors
+           $obj->varb(200);
+           $obj->varc(300);
+           $obj->vard(400);
+           $obj->vare(500);
+           print Dumper($obj);
+
+           return $self;
+       }
+       1;
+       BEGIN {							# Begin block required since Data is
+       package Data;						# not in a separate module. Therefore
+       use strict;						# mk_accessors not run before being used
+       use warnings;						# and accessor subs would not be defined.
+       use Class::Accessor::Fast;				# Normally use Data would fix this issue
+       use base qw(Class::Accessor::Fast);
+
+       __PACKAGE__->mk_accessors(qw(vara varb varc vard vare));
+
+       sub new {shift->SUPER::new(@_);}
+       1;
+       }
+
+Sub-Classing Example
+--------------------
+
+Module that sub-classes the LCDdisplay.pm class to add several variables necessary
+to use LCDdispaly.pm to create an LCD clock. An LCDdisplay object and accessors
+are created by shift->SUPER::new. ->mk_accessors creates 3 additional accesors.
+Then 3 additional member variables are created. This expanded LCDdisplay object
+is then passed back to the calling LCDClock program. This method keeps the 
+base object clean of code and variables that are extensions to the base functionality.
+
+    #! /home/xxxx/CitrusPerl/perl/bin/perl
+    #
+    # LCDdisplayClock1.pm
+    # Module subclass to draw an LCD clock
+    #
+    # Derived class from LCDdisplay1.pm
+    # Adds 3 extra member variables needed to make a clock from an LCDdisplay object 
+    #
+
+    package LCDdisplayClock1;
+    use strict;
+    use warnings;
+    use Wx;
+    use base qw(LCDdisplay1);					# LCDdisplay object
+    use Data::Dumper;
+
+    package LCDdisplayClock1::Data;				# Creates the object and accessors
+    use strict;
+    use warnings;
+    use base qw(LCDdisplay1::Data);
+    use Data::Dumper;
+
+    __PACKAGE__->mk_accessors(qw( mToggle mBlinkFlag m1224Flag));
+
+    sub new {
+        my($self) = shift->SUPER::new(@_);			# Create an LCDdisplay object
+								# Add 3 additional member variables
+        $self->mToggle(0);					# used to toggle the :
+        $self->mBlinkFlag(0);					# used to enable blinking the :
+        $self->m1224Flag(0);					# 12 or 24 hour display format
+
+        return $self;
+    }
+    1;
+
