@@ -1,6 +1,8 @@
 wxPerl Repository for examples not directly related to the wxBook.
 ------------------------------------------------------------------
 
+Updated February 14, 2013
+
 These modules replace any similar programs in the wxPerl-wxBook repository.
 All of these are implemented as modules/classes and derived classes
 using Class::Accessor::Fast. I hope these are of assistance to you.
@@ -9,6 +11,8 @@ using Class::Accessor::Fast. I hope these are of assistance to you.
 AlarmClock 	LCD Alarm Clock
 		AudiableAlarm.pm	- Uses wxMediaControl to play an MP3 file as a wakeup tune
 		LCDAlarmClock1.pl	- Uses LCDdisplayClock1.pm(see below) as a basic clock
+		LCDAlarmClockDialog.pm	- Custom Dialog with validator
+		LCDAlarmClockDialog.pl	- Test driver for the custom dialog
 
 Angular Meter 	Draws a Round Panel Meter
 		AngularMeter1.pm	- Creates a round panel meter
@@ -29,8 +33,9 @@ LinearMeter	Draws a Linear Panel Meter
 					    Animated with simulated(random) data
 
 Process Control	Combines Round and Linear meters on a single display
-		PC1.pl			- Uses AngularMeter1.pm and LinearMeter4.pm to draw 4 linear and 2 round meters
-					    Animated with simulated(random) data
+		PC1.pl			- Uses AngularMeter1.pm and LinearMeter4.pm to
+					  draw 4 linear and 2 round meters
+					  Animated with simulated(random) data
 
 NewWxApp	Basic Structure for a wxPerl Application
 		NewWxApp.pl		- Basic wxPerl application using Class::Accessor
