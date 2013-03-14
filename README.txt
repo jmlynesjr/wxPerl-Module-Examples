@@ -1,11 +1,11 @@
 wxPerl Repository for examples not directly related to the wxBook.
 ------------------------------------------------------------------
 
-Updated February 14, 2013
+Updated March 14, 2013
 
 These modules replace any similar programs in the wxPerl-wxBook repository.
-All of these are implemented as modules/classes and derived classes
-using Class::Accessor::Fast. I hope these are of assistance to you.
+Most of these are implemented as modules/classes and derived classes
+some using Class::Accessor::Fast. I hope these are of assistance to you.
 
 
 AlarmClock 	LCD Alarm Clock
@@ -43,4 +43,13 @@ NewWxApp	Basic Structure for a wxPerl Application
 TheBridge	Draft Document concerning creating wxPerl applications
 		TheBridge		- Collection of documents, emails, and writings on
 					  creating a wxPerl application
+LED Panel	LED 5x7 Dot Matrix Display Panel
+		LedPanelApp.pl		- Draws 7 LED Dot Matrix Displays
+		LedPanelDisplay.pm	- Creates displays
+		LedPanelMatrix.pm	- Creates matricies
+		LedPanelColourTbl.pm	- Defines color pallets
+		LedPanelCtbl.pm		- Defines 5x7 format characters
+
+Virtual List	Virtual List Control Subclass Example
+		VirtualListCtrl.pl
 
