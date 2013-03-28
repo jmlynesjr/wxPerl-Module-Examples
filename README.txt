@@ -1,10 +1,10 @@
-wxPerl Repository for examples not directly related to the wxBook.
-------------------------------------------------------------------
+wxPerl Repository for examples not directly related to the wxBook or greatly expanded from it.
+----------------------------------------------------------------------------------------------
 
-Updated March 14, 2013
+Updated March 28, 2013
 
 These modules replace any similar programs in the wxPerl-wxBook repository.
-Most of these are implemented as modules/classes and derived classes
+Many of these are implemented as modules/classes and derived classes
 some using Class::Accessor::Fast. I hope these are of assistance to you.
 
 
@@ -52,4 +52,11 @@ LED Panel	LED 5x7 Dot Matrix Display Panel
 
 Virtual List	Virtual List Control Subclass Example
 		VirtualListCtrl.pl
+
+ListCtrl	List Control Experiment in Formatting the Column Headers - font and color
+		ListCtrl3.pl
+
+Grid		Grid Control Expansion of the wxBook Example - fonts, colors, sizes, modes, appends, etc
+		Grid.pl
+
 
