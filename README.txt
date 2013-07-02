@@ -1,7 +1,7 @@
 wxPerl Repository for examples not directly related to the wxBook or greatly expanded from it.
 ----------------------------------------------------------------------------------------------
 
-Updated April 2, 2013
+Updated July 2, 2013
 
 These modules replace any similar programs in the wxPerl-wxBook repository.
 Many of these are implemented as modules/classes and derived classes
@@ -62,6 +62,10 @@ Grid		Grid Control Expansion of the wxBook Example - fonts, colors, sizes, modes
 wxGridTable	"Virtual" Grid Control example with customized column and row headers - fonts, colors, text, etc.
 		Needs to be expanded with methods to load the grid from an SQL database.
 		wxGridTable.pl
+
+ImpedanceGraph2 wxPerl Integration with GD::Graph Example.
+		ImpedanceGraph2.pl
+
 
 
 
